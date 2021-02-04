@@ -1,4 +1,5 @@
 ﻿using CandidateProject.EntityModels;
+using CandidateProject.Utils;
 using CandidateProject.ViewModels;
 using System;
 using System.Data;
@@ -132,7 +133,11 @@ namespace CandidateProject.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            DeleteAllCartondetail(id);
+            if (id <= 0)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            CartonBuilderSingletonUtil.Instance.DeleteAllCartondetail(id);
             Carton carton = db.Cartons.Find(id);
             db.Cartons.Remove(carton);
             db.SaveChanges();
@@ -177,18 +182,23 @@ namespace CandidateProject.Controllers
                     Id = e.Id,
                     ModelType = e.ModelType.TypeName,
                     SerialNumber = e.SerialNumber
-                }) 
+                })
                 .ToList();
-            
+
             carton.Equipment = equipment;
             return View(carton);
         }
 
+        /// <summary>
+        /// This is to add the Equipment to the Carton; if the carton is having less than 10 items
+        /// </summary>
+        /// <param name="addEquipmentViewModel"></param>
+        /// <returns></returns>
         public ActionResult AddEquipmentToCarton([Bind(Include = "CartonId,EquipmentId")] AddEquipmentViewModel addEquipmentViewModel)
         {
-            if (ModelState.IsValid)
+            if (addEquipmentViewModel != null)
             {
-                int count = getCartonCount(addEquipmentViewModel.CartonId);
+                int count = CartonBuilderSingletonUtil.Instance.getCartonCount(addEquipmentViewModel.CartonId);
                 if (count < 10)
                 {
                     var carton = db.Cartons
@@ -218,6 +228,12 @@ namespace CandidateProject.Controllers
             return RedirectToAction("AddEquipment", new { id = addEquipmentViewModel.CartonId });
         }
      
+        /// <summary>
+        /// This is to view the Carton and Equipment details for the given ID.
+        /// If the ID is null it'll be a bad request
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public ActionResult ViewCartonEquipment(int? id)
         {
             if (id == null)
@@ -246,6 +262,11 @@ namespace CandidateProject.Controllers
             return View(carton);
         }
 
+        /// <summary>
+        /// This is to remove the Equipment from the Carton by the Carton Id and Equipment ID
+        /// </summary>
+        /// <param name="removeEquipmentViewModel"></param>
+        /// <returns></returns>
         public ActionResult RemoveEquipmentOnCarton([Bind(Include = "CartonId,EquipmentId")] RemoveEquipmentViewModel removeEquipmentViewModel)
         {
             //return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
@@ -261,31 +282,19 @@ namespace CandidateProject.Controllers
             return RedirectToAction("ViewCartonEquipment", new { id = removeEquipmentViewModel.CartonId });
         }
 
+        /// <summary>
+        /// Facility to delete all the Equipments from the Carton in one go.
+        /// </summary>
+        /// <param name="CartonID"></param>
+        /// <returns></returns>
         public ActionResult RemoveAllEquipmentOnCarton(int CartonID)
         {
-            DeleteAllCartondetail(CartonID);
+            if (CartonID <= 0)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            CartonBuilderSingletonUtil.Instance.DeleteAllCartondetail(CartonID);
             return RedirectToAction("ViewCartonEquipment", new { id = CartonID });
         }
-
-
-        private void DeleteAllCartondetail(int id)
-        {
-            foreach (var item in db.CartonDetails)
-            {
-                if (item.CartonId == id)
-                {
-                    db.CartonDetails.Remove(item);
-                }
-            }
-            db.SaveChanges();
-        }
-
-        private int getCartonCount(int cartonId)
-        {
-            var cartonDetail = db.CartonDetails.Where(c => c.CartonId == cartonId);
-            int cartonCount = cartonDetail.Count();
-            return cartonCount;
-        }
-
     }
 }

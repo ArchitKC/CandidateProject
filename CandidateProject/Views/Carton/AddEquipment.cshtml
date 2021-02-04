@@ -1,10 +1,12 @@
 ﻿@model CandidateProject.ViewModels.CartonDetailsViewModel
 
 @{
-    ViewBag.Title = "AddEquipment";
+    ViewBag.Title = "Add Equipment";
 }
 
-<h2>AddEquipment</h2>
+<h2>Add Equipment</h2>
+
+<p>@Html.ActionLink("Back to List", "Index")</p>
 
 <h3>@Html.DisplayFor(model => model.CartonNumber)</h3>
 <table class="table">

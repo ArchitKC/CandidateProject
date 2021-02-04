@@ -8,9 +8,9 @@
 
 <h3>@Html.DisplayFor(model => model.CartonNumber)</h3>
 @if (Model.Equipment.Count() == 0)
-{    <p>
-    @Html.ActionLink("AddEquipment", "AddEquipment", new { id = Model.CartonId })
-</p>
+{<p>
+        @Html.ActionLink("AddEquipment", "AddEquipment", new { id = Model.CartonId })
+    </p>
 }
 
 <table class="table">
@@ -46,3 +46,6 @@
     }
 
 </table>
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>
